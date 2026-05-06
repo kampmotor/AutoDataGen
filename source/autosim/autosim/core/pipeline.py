@@ -216,6 +216,18 @@ class AutoSimPipeline(ABC):
             if output.done:
                 return True, steps
 
+        # Log current and target positions when max_steps reached
+        if steps >= self.cfg.max_steps:
+            world_state = self._build_world_state()
+            current_pos = world_state.robot_base_pose[:2]
+            if goal.target_pose is not None:
+                target_pos = goal.target_pose[:2]
+                dist = float(torch.linalg.norm(current_pos - target_pos))
+                self._logger.warning(
+                    f"Max steps reached. Current pos: ({current_pos[0]:.3f}, {current_pos[1]:.3f}), "
+                    f"Target pos: ({target_pos[0]:.3f}, {target_pos[1]:.3f}), Distance: {dist:.3f}m"
+                )
+
         return False, steps
 
     def _build_world_state(self) -> WorldState:

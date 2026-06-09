@@ -26,6 +26,7 @@ class FrankaCubeLiftPipelineCfg(AutoSimPipelineCfg):
         self.motion_planner.robot_config_file = "franka.yml"
         self.motion_planner.world_ignore_subffixes = []
         self.motion_planner.world_only_subffixes = []
+        self.motion_planner.env_scene_prefix = None
 
 
 class FrankaCubeLiftPipeline(AutoSimPipeline):
@@ -56,7 +57,7 @@ class FrankaCubeLiftPipeline(AutoSimPipeline):
             ee_link_name="panda_hand",
             object_reach_target_poses={
                 "cube": [
-                    torch.tensor([0.0, 0.0, 0.10, 0.0, 1.0, 0.0, 0.0]),
+                    torch.tensor([0.0, 0.0, 0.10, 1.0, 0.0, 0.0, 0.0]),  # [x, y, z, qx, qy, qz, qw]: 绕 x 轴 180°
                 ],
             },
         )

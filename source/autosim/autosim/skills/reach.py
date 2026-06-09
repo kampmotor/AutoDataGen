@@ -15,6 +15,7 @@ from autosim.core.types import (
     SkillOutput,
     WorldState,
 )
+from autosim.utils.data_util import as_torch, convert_quat
 
 from .base_skill import CuroboSkillBase, CuroboSkillExtraCfg
 
@@ -69,10 +70,10 @@ class ReachSkill(CuroboSkillBase):
         primary_pose_in_robot_root = current_link_poses[self._planner.motion_gen.kinematics.ee_link]
         primary_link_pose_in_robot_root = (
             primary_pose_in_robot_root.position,
-            primary_pose_in_robot_root.quaternion,
+            convert_quat(primary_pose_in_robot_root.quaternion, to="xyzw"),  # cuRobo wxyz → xyzw
         )
         extra_link_poses_in_robot_root = {
-            link_name: (pose.position, pose.quaternion)
+            link_name: (pose.position, convert_quat(pose.quaternion, to="xyzw"))  # cuRobo wxyz → xyzw
             for link_name, pose in current_link_poses.items()
             if link_name != self._planner.motion_gen.kinematics.ee_link
         }
@@ -140,7 +141,7 @@ class ReachSkill(CuroboSkillBase):
         """Build link-level extra target poses based on configuration.
 
         This is the dispatcher for `extra_target_mode`. It returns a dict mapping link names to pose
-        tensors in `[x, y, z, qw, qx, qy, qz]` (single-sample), used as additional link goals/constraints
+        tensors in `[x, y, z, qx, qy, qz, qw]` (single-sample), used as additional link goals/constraints
         during planning.
         """
 
@@ -166,7 +167,9 @@ class ReachSkill(CuroboSkillBase):
         for link_name, pose in self._planner.get_link_poses(
             activate_q, self.cfg.extra_cfg.extra_target_link_names
         ).items():
-            extra_target_poses[link_name] = torch.cat((pose.position, pose.quaternion), dim=-1).squeeze(0)
+            extra_target_poses[link_name] = torch.cat(
+                (pose.position, convert_quat(pose.quaternion, to="xyzw")), dim=-1  # cuRobo wxyz → xyzw
+            ).squeeze(0)
 
         return extra_target_poses
 
@@ -235,7 +238,7 @@ class ReachSkill(CuroboSkillBase):
             SkillGoal with target poses in robot root frame.
         """
 
-        object_pose_in_env = env.scene[target_object].data.root_pose_w
+        object_pose_in_env = as_torch(env.scene[target_object].data.root_pose_w)
 
         object_pos_in_env = object_pose_in_env[:, :3]
         object_quat_in_env = object_pose_in_env[:, 3:]
@@ -250,8 +253,8 @@ class ReachSkill(CuroboSkillBase):
         self.visualize_debug_target_pose()
 
         robot = env.scene[env_extra_info.robot_name]
-        robot_root_pos_in_env = robot.data.root_pose_w[:, :3]
-        robot_root_quat_in_env = robot.data.root_pose_w[:, 3:]
+        robot_root_pos_in_env = as_torch(robot.data.root_pose_w)[:, :3]
+        robot_root_quat_in_env = as_torch(robot.data.root_pose_w)[:, 3:]
 
         reach_target_pos_in_root, reach_target_quat_in_root = PoseUtils.subtract_frame_transforms(
             robot_root_pos_in_env, robot_root_quat_in_env, reach_target_pos_in_env, reach_target_quat_in_env
@@ -262,7 +265,7 @@ class ReachSkill(CuroboSkillBase):
         )
 
         activate_q, _ = self._build_activate_joint_state(
-            robot.data.joint_names, robot.data.joint_pos[0], robot.data.joint_vel[0]
+            robot.data.joint_names, as_torch(robot.data.joint_pos)[0], as_torch(robot.data.joint_vel)[0]
         )
         extra_target_poses = self._build_extra_target_poses(activate_q, target_pose, env_extra_info)
 
@@ -302,8 +305,8 @@ class ReachSkill(CuroboSkillBase):
 
         robot = env.scene[env_extra_info.robot_name]
         ee_link_idx = robot.data.body_names.index(env_extra_info.ee_link_name)
-        ee_pose_w = robot.data.body_link_pose_w[0, ee_link_idx]  # [7]
-        obj_pose_w = env.scene[target_object].data.root_pose_w[0]  # [7]
+        ee_pose_w = as_torch(robot.data.body_link_pose_w)[0, ee_link_idx]  # [7]
+        obj_pose_w = as_torch(env.scene[target_object].data.root_pose_w)[0]  # [7]
 
         ee_pos_oe, ee_quat_oe = PoseUtils.subtract_frame_transforms(
             obj_pose_w[:3].unsqueeze(0),
@@ -347,7 +350,7 @@ class ReachSkill(CuroboSkillBase):
     def extract_goal_from_info(
         self, skill_info: SkillInfo, env: ManagerBasedEnv, env_extra_info: EnvExtraInfo
     ) -> SkillGoal:
-        """Return the target pose[x, y, z, qw, qx, qy, qz] in the robot root frame.
+        """Return the target pose[x, y, z, qx, qy, qz, qw] in the robot root frame.
         IMPORTANT: the robot root frame is not the same as the robot base frame.
         """
 
@@ -442,7 +445,9 @@ class ReachSkill(CuroboSkillBase):
             activate_q, _ = self._build_activate_joint_state(state.sim_joint_names, joint_pos, None)
             all_link_poses = self._planner.get_link_poses(activate_q, link_names=None)
             info["link_poses_in_robot_root_frame"] = {
-                name: torch.cat([pose.position.squeeze(0), pose.quaternion.squeeze(0)])
+                name: torch.cat(
+                    [pose.position.squeeze(0), convert_quat(pose.quaternion.squeeze(0), to="xyzw")]
+                )  # cuRobo wxyz → xyzw
                 for name, pose in all_link_poses.items()
             }
 

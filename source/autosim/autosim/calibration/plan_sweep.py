@@ -9,6 +9,7 @@ import torch
 from autosim.core.pipeline import AutoSimPipeline
 from autosim.core.registration import SkillRegistry
 from autosim.skills.reach import ReachSkill
+from autosim.utils.data_util import as_torch
 
 from .pose_sampler import OffsetSampler, PoseSampler
 
@@ -38,15 +39,15 @@ def _fmt_pose(vals: list[float]) -> str:
 
 
 def _quat_mul(q1: torch.Tensor, q2: torch.Tensor) -> torch.Tensor:
-    """Multiply quaternions in wxyz format elementwise over the leading dimensions."""
-    w1, x1, y1, z1 = q1.unbind(-1)
-    w2, x2, y2, z2 = q2.unbind(-1)
+    """Multiply quaternions in xyzw format elementwise over the leading dimensions."""
+    x1, y1, z1, w1 = q1.unbind(-1)
+    x2, y2, z2, w2 = q2.unbind(-1)
     return torch.stack(
         [
-            w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2,
             w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
             w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2,
             w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2,
+            w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2,
         ],
         dim=-1,
     )
@@ -60,7 +61,7 @@ def _uniform_yaw_rotations(device: torch.device, dtype: torch.dtype, num_rotatio
     for idx in range(num_rotations):
         yaw = (2.0 * math.pi * idx) / num_rotations
         half = yaw * 0.5
-        rotations.append(torch.tensor([math.cos(half), 0.0, 0.0, math.sin(half)], device=device, dtype=dtype))
+        rotations.append(torch.tensor([0.0, 0.0, math.sin(half), math.cos(half)], device=device, dtype=dtype))
     return rotations
 
 
@@ -174,7 +175,7 @@ def _sweep_all_rotations(
     env_extra_info = pipeline._env_extra_info
     obj = env.scene[obj_name]
 
-    original_pose_w = obj.data.root_pose_w[pipeline._env_id].clone()
+    original_pose_w = as_torch(obj.data.root_pose_w)[pipeline._env_id].clone()
     base_quat_w = original_pose_w[3:].clone()
     env_ids = torch.tensor([pipeline._env_id], device=original_pose_w.device, dtype=torch.int32)
     results: list[dict[str, Any]] = []
@@ -319,14 +320,14 @@ def _sweep(
     poses_oe = cfg.sampling.sample(base_pose_oe)
     k = int(poses_oe.shape[0])
 
-    obj_pose_w = env.scene[obj_name].data.root_pose_w[env_id]
+    obj_pose_w = as_torch(env.scene[obj_name].data.root_pose_w)[env_id]
     obj_pos_w = obj_pose_w[:3].view(1, 3).repeat(k, 1)
     obj_quat_w = obj_pose_w[3:].view(1, 4).repeat(k, 1)
 
     target_pos_w, target_quat_w = PoseUtils.combine_frame_transforms(
         obj_pos_w, obj_quat_w, poses_oe[:, :3], poses_oe[:, 3:]
     )
-    robot_root_pose_w = robot.data.root_pose_w[env_id]
+    robot_root_pose_w = as_torch(robot.data.root_pose_w)[env_id]
     rr_pos_w = robot_root_pose_w[:3].view(1, 3).repeat(k, 1)
     rr_quat_w = robot_root_pose_w[3:].view(1, 4).repeat(k, 1)
     target_pos_r, target_quat_r = PoseUtils.subtract_frame_transforms(rr_pos_w, rr_quat_w, target_pos_w, target_quat_w)

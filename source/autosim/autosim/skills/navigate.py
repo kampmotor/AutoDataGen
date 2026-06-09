@@ -16,6 +16,7 @@ from autosim.core.types import (
     SkillOutput,
     WorldState,
 )
+from autosim.utils.data_util import as_torch
 from autosim.utils.debug_util import debug_visualize_goal_sampling
 
 
@@ -99,8 +100,8 @@ class NavigateSkill(Skill):
         if target_object_name in per_obj_yaw:
             self.cfg.extra_cfg.yaw_tolerance = per_obj_yaw[target_object_name]
 
-        obj_pos_w = target_object.data.root_pos_w[0].cpu().numpy()
-        self._logger.info(f"Object pose in world frame: {target_object.data.root_pose_w[0]}")
+        obj_pos_w = as_torch(target_object.data.root_pos_w)[0].cpu().numpy()
+        self._logger.info(f"Object pose in world frame: {as_torch(target_object.data.root_pose_w)[0]}")
 
         is_free = (self._occupancy_map.occupancy_map == 0).cpu().numpy()
         if np.any(is_free):
@@ -230,7 +231,7 @@ class NavigateSkill(Skill):
 
         # If we are not in the final approach, try to face the object
         if not is_final_approach:
-            obj_tensor = state.objects[self._target_object_name]  # [x, y, z, qw, qx, qy, qz]
+            obj_tensor = state.objects[self._target_object_name]  # [x, y, z, qx, qy, qz, qw]
             obj_pos = obj_tensor[:2]  # [x, y] in world frame
 
             dx_obj = obj_pos[0] - current_pose[0]

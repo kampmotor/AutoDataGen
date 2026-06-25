@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>具身智能数据生成：技术演进、方法分类与未来方向</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --secondary: #34a853;
+            --accent: #ea4335;
+            --bg: #ffffff;
+            --bg-alt: #f8f9fa;
+            --bg-code: #f1f3f4;
+            --text: #202124;
+            --text-secondary: #5f6368;
+            --border: #dadce0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            line-height: 1.8;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #1a237e 0%, #1565c0 50%, #0d47a1 100%);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.4em;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        header .subtitle {
+            font-size: 1.15em;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        header .meta {
+            margin-top: 24px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        /* TOC */
+        .toc {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 32px;
+            margin: 40px 0;
+        }
+
+        .toc h2 {
+            font-size: 1.3em;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        .toc ol {
+            padding-left: 24px;
+        }
+
+        .toc li {
+            margin-bottom: 6px;
+        }
+
+        .toc a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--primary);
+        }
+
+        .toc .sub {
+            padding-left: 20px;
+            margin-top: 4px;
+        }
+
+        .toc .sub li {
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+
+        /* Sections */
+        section {
+            margin: 48px 0;
+        }
+
+        h2 {
+            font-size: 1.7em;
+            font-weight: 700;
+            color: var(--text);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+            margin-top: 48px;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--text);
+            margin: 32px 0 16px;
+        }
+
+        h4 {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 24px 0 12px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        strong {
+            font-weight: 600;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92em;
+        }
+
+        thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--bg-alt);
+        }
+
+        tbody tr:hover {
+            background: #e8f0fe;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+
+        .card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card .card-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .card .card-tag {
+            display: inline-block;
+            background: #e8f0fe;
+            color: var(--primary-dark);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 0.93em;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* Code / Flow */
+        .flow-diagram {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+            font-family: "SF Mono", "Fira Code", monospace;
+            font-size: 0.9em;
+            line-height: 2;
+            overflow-x: auto;
+        }
+
+        .flow-diagram .flow-step {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            margin: 4px;
+            font-weight: 500;
+        }
+
+        .flow-diagram .flow-arrow {
+            display: inline-block;
+            color: var(--text-secondary);
+            margin: 0 4px;
+            font-weight: bold;
+        }
+
+        /* Highlight box */
+        .highlight-box {
+            background: linear-gradient(135deg, #e8f0fe 0%, #f0f6ff 100%);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+
+        .highlight-box.accent {
+            background: linear-gradient(135deg, #fce8e6 0%, #fff5f5 100%);
+            border-left-color: var(--accent);
+        }
+
+        .highlight-box.success {
+            background: linear-gradient(135deg, #e6f4ea 0%, #f0faf2 100%);
+            border-left-color: var(--secondary);
+        }
+
+        .highlight-box p {
+            margin: 0;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+            margin: 24px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 28px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 6px;
+            width: 14px;
+            height: 14px;
+            background: var(--primary);
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .timeline-item .timeline-year {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .timeline-item h4 {
+            margin: 4px 0 8px;
+            color: var(--text);
+        }
+
+        .timeline-item p {
+            font-size: 0.93em;
+            color: var(--text-secondary);
+        }
+
+        /* Lists */
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-alt);
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            margin-top: 60px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            header {
+                padding: 60px 0 40px;
+            }
+
+            .container {
+                padding: 0 16px;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.82em;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+        }
+
+        /* Print */
+        @media print {
+            header {
+                background: #1a237e !important;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .card {
+                break-inside: avoid;
+            }
+
+            .table-wrapper {
+                break-inside: avoid;
+            }
+        }
+
+        /* Navigation */
+        .back-to-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <h1>具身智能数据生成</h1>
+        <p class="subtitle">技术演进、方法分类与未来方向 —— 从人类遥操作到自主合成的范式转变</p>
+        <p class="meta">AutoDataGen 技术调研报告 · 2026 年 6 月</p>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- TOC -->
+    <nav class="toc" id="toc">
+        <h2>目录</h2>
+        <ol>
+            <li><a href="#ch1">引言</a>
+                <ol class="sub">
+                    <li><a href="#s1-1">背景与动机</a></li>
+                    <li><a href="#s1-2">为什么叫"数据生成"而非"数据采集"</a></li>
+                    <li><a href="#s1-3">本文结构</a></li>
+                </ol>
+            </li>
+            <li><a href="#ch2">具身智能数据的分类体系</a>
+                <ol class="sub">
+                    <li><a href="#s2-1">按数据来源分类</a></li>
+                    <li><a href="#s2-2">按任务类型分类</a></li>
+                    <li><a href="#s2-3">按数据模态分类</a></li>
+                </ol>
+            </li>
+            <li><a href="#ch3">数据生成方法的技术谱系</a>
+                <ol class="sub">
+                    <li><a href="#s3-1">第一代：基于人类示教的轨迹增强</a></li>
+                    <li><a href="#s3-2">第二代：基于 LLM/VLM 的自动化任务分解</a></li>
+                    <li><a href="#s3-3">第三代：世界模型作为数据引擎</a></li>
+                    <li><a href="#s3-4">第四代：Real-to-Sim-to-Real 闭环</a></li>
+                    <li><a href="#s3-5">第五代：数据飞轮</a></li>
+                </ol>
+            </li>
+            <li><a href="#ch4">关键技术组件深度解析</a></li>
+            <li><a href="#ch5">定量对比分析</a></li>
+            <li><a href="#ch6">核心挑战与开放问题</a></li>
+            <li><a href="#ch7">AutoDataGen 的技术定位与贡献</a></li>
+            <li><a href="#ch8">未来方向与展望</a></li>
+            <li><a href="#ch9">结论</a></li>
+            <li><a href="#appendix">附录</a></li>
+        </ol>
+    </nav>
+
+    <!-- Chapter 1 -->
+    <section id="ch1">
+        <h2>第一章 引言</h2>
+
+        <h3 id="s1-1">1.1 背景与动机</h3>
+        <p>机器人学习正在经历从"手工编程"到"数据驱动"的范式转变。模仿学习（Imitation Learning, IL）已成为训练机器人策略的主流范式，但其核心瓶颈在于<strong>数据饥渴</strong>——策略的泛化能力与训练数据的规模和多样性直接相关。</p>
+
+        <div class="highlight-box accent">
+            <p><strong>核心矛盾：</strong>真实世界数据采集成本极高（遥操作 $100+/小时，需要专业操作员），而策略训练对数据规模的需求却在不断增长（从千级到百万级轨迹）。这一矛盾催生了"仿真数据生成"这一研究方向。</p>
+        </div>
+
+        <p>以 NVIDIA GR00T N1 模型为例，其训练依赖数百万条操作轨迹。若全部通过人类遥操作采集，需要数千小时的人工时间。而通过仿真数据生成，NVIDIA 在 11 小时内生成了 78 万条合成轨迹——相当于 6,500 小时的遥操作数据，结合真实数据后性能提升 40%。</p>
+
+        <h3 id="s1-2">1.2 为什么叫"数据生成"而非"数据采集"</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>维度</th>
+                        <th>传统数据采集</th>
+                        <th>仿真数据生成</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>输入</strong></td>
+                        <td>人类操作员 + 遥操作设备</td>
+                        <td>GPU 算力 + 少量种子示教/任务描述</td>
+                    </tr>
+                    <tr>
+                        <td><strong>过程</strong></td>
+                        <td>人类实时控制机器人，记录轨迹</td>
+                        <td>算法在仿真中自动合成轨迹</td>
+                    </tr>
+                    <tr>
+                        <td><strong>成本</strong></td>
+                        <td>~$100/小时（人工）+ 设备折旧</td>
+                        <td>~$1-5/小时（GPU 时间）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>规模上限</strong></td>
+                        <td>受限于人类工作时间</td>
+                        <td>仅受限于计算资源</td>
+                    </tr>
+                    <tr>
+                        <td><strong>多样性</strong></td>
+                        <td>受限于操作员技能和体力</td>
+                        <td>可通过域随机化无限扩展</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p>本质上，"数据生成"意味着<strong>从人工密集型到计算密集型的转换</strong>——用 GPU 时间替代人类时间，用算法自动化替代手工操作。</p>
+
+        <h3 id="s1-3">1.3 本文结构</h3>
+        <p>本报告系统梳理具身智能数据生成的技术全景：从分类体系（第二章）到技术谱系（第三章），从关键组件（第四章）到定量对比（第五章），最终定位 AutoDataGen 在这一领域中的独特价值（第七章），并展望未来方向（第八章）。</p>
+    </section>
+
+    <!-- Chapter 2 -->
+    <section id="ch2">
+        <h2>第二章 具身智能数据的分类体系</h2>
+
+        <h3 id="s2-1">2.1 按数据来源分类</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>类别</th>
+                        <th>代表工作</th>
+                        <th>数据来源</th>
+                        <th>优势</th>
+                        <th>局限</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>真实世界遥操作</strong></td>
+                        <td>Open X-Embodiment, DROID</td>
+                        <td>人类实时控制机器人</td>
+                        <td>物理真实、动力学一致</td>
+                        <td>成本高、规模受限</td>
+                    </tr>
+                    <tr>
+                        <td><strong>仿真合成数据</strong></td>
+                        <td>MimicGen, Isaac Lab</td>
+                        <td>物理仿真引擎生成</td>
+                        <td>大规模、低成本、可控</td>
+                        <td>Sim-to-Real 鸿沟</td>
+                    </tr>
+                    <tr>
+                        <td><strong>互联网视频</strong></td>
+                        <td>RoboMimic, LfV</td>
+                        <td>YouTube/人类操作视频</td>
+                        <td>数据丰富、零成本</td>
+                        <td>缺少动作标签、形态差异</td>
+                    </tr>
+                    <tr>
+                        <td><strong>世界模型生成</strong></td>
+                        <td>GigaWorld-0, RoboDream</td>
+                        <td>扩散模型/视频生成</td>
+                        <td>视觉多样、可扩展</td>
+                        <td>物理一致性待验证</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 id="s2-2">2.2 按任务类型分类</h3>
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-tag">操作任务</div>
+                <div class="card-title">Manipulation</div>
+                <p>抓取、放置、装配、插入等桌面级操作。数据需求：精细末端执行器轨迹 + 接触力信息。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">移动导航</div>
+                <div class="card-title">Locomotion</div>
+                <p>AMR 导航、四足运动、人形行走。数据需求：底盘速度指令 + 全身关节轨迹。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">移动操作</div>
+                <div class="card-title">Locomanipulation</div>
+                <p>移动到目标位置 → 执行操作 → 移动到下一位置。数据需求：导航 + 操作的复合轨迹。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">灵巧手操作</div>
+                <div class="card-title">Dexterous</div>
+                <p>多指精细操作（拧瓶盖、折叠布料）。数据需求：高维手指关节轨迹 + 精细接触信息。</p>
+            </div>
+        </div>
+
+        <h3 id="s2-3">2.3 按数据模态分类</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>模态</th>
+                        <th>内容</th>
+                        <th>典型格式</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>动作空间</strong></td>
+                        <td>关节位置、末端执行器位姿、力矩</td>
+                        <td>HDF5, LeRobot</td>
+                        <td>策略训练的监督信号</td>
+                    </tr>
+                    <tr>
+                        <td><strong>视觉空间</strong></td>
+                        <td>RGB、深度、分割图、法线贴图</td>
+                        <td>MP4, PNG, HDF5</td>
+                        <td>视觉策略输入</td>
+                    </tr>
+                    <tr>
+                        <td><strong>状态空间</strong></td>
+                        <td>关节状态、物体位姿、接触力</td>
+                        <td>HDF5, JSON</td>
+                        <td>状态策略输入</td>
+                    </tr>
+                    <tr>
+                        <td><strong>语言标注</strong></td>
+                        <td>任务描述、子任务指令</td>
+                        <td>JSON, JSONL</td>
+                        <td>语言条件策略</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Chapter 3 -->
+    <section id="ch3">
+        <h2>第三章 数据生成方法的技术谱系</h2>
+
+        <p>具身智能数据生成方法经历了五代演进，自动化程度逐步提升，对人类示教的依赖逐步降低。</p>
+
+        <div class="flow-diagram">
+            <span class="flow-step">第一代：轨迹增强</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step">第二代：LLM 规划</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step">第三代：世界模型</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step">第四代：闭环</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step">第五代：数据飞轮</span>
+        </div>
+
+        <!-- 3.1 First Gen -->
+        <h3 id="s3-1">3.1 第一代：基于人类示教的轨迹增强（Trajectory Augmentation）</h3>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-year">2023 · CoRL</div>
+                <h4>MimicGen（NVIDIA）</h4>
+                <p><strong>核心思想：</strong>将人类示教切分为子任务段，通过刚体变换 + 线性插值生成新轨迹。</p>
+                <p><strong>规模：</strong>从 ~200 条人类遥操作示教生成 50,000+ 条合成轨迹（18 个任务）。</p>
+                <p><strong>局限：</strong>仅支持单臂平行夹爪；不保证运动学可行性。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2024 · Isaac Lab 官方</div>
+                <h4>SkillGen</h4>
+                <p><strong>改进：</strong>在 MimicGen 基础上引入 cuRobo 运动规划器。</p>
+                <p><strong>创新：</strong>子任务段之间使用碰撞感知运动规划过渡，而非简单线性插值。</p>
+                <p><strong>支持：</strong>双臂协调、顺序/同步执行约束。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2024 · ICRA 2025</div>
+                <h4>DexMimicGen（NVIDIA）</h4>
+                <p><strong>扩展：</strong>面向人形机器人灵巧手 + 双臂操作。</p>
+                <p><strong>规模：</strong>从 60 条人类示教生成 21,000 条轨迹。</p>
+                <p><strong>支持：</strong>3 种机器人形态（单臂、双臂、人形）。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2026</div>
+                <h4>SoftMimicGen</h4>
+                <p><strong>扩展：</strong>处理可变形物体（绳子、毛巾、组织）。</p>
+                <p><strong>支持：</strong>4 种机器人形态，包括手术机器人。</p>
+            </div>
+        </div>
+
+        <div class="highlight-box">
+            <p><strong>第一代特征：</strong>以少量人类示教为"种子"，通过几何变换扩增数据。核心假设是"相同任务的不同实例可以通过刚体变换互相转化"。优点是简单可靠，缺点是无法处理需要动力学推理的场景。</p>
+        </div>
+
+        <!-- 3.2 Second Gen -->
+        <h3 id="s3-2">3.2 第二代：基于 LLM/VLM 的自动化任务分解与规划</h3>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-tag">本项目</div>
+                <div class="card-title">AutoDataGen</div>
+                <p><strong>核心突破：</strong>完全消除人类示教依赖。任务代码 + 场景信息 → LLM 分解为原子技能序列 → cuRobo/A*/DWA 执行 → 动作数据。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">ICML 2024</div>
+                <div class="card-title">RoboGen（CMU）</div>
+                <p><strong>流程：</strong>LLM 提出任务 → 生成场景 → 选择学习方法（RL/运动规划/轨迹优化）→ 学习策略。闭环自主循环。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">CoRL 2025</div>
+                <div class="card-title">GenSim2（Stanford）</div>
+                <p><strong>改进：</strong>使用多模态推理 LLM 创建复杂仿真任务（含铰接物体）。100 个铰接任务 × 200 个物体。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">2025</div>
+                <div class="card-title">HumanoidGen</div>
+                <p><strong>面向：</strong>人形机器人双臂灵巧操作。LLM + 蒙特卡洛树搜索（MCTS）增强长时域推理。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">2025</div>
+                <div class="card-title">GENMANIP</div>
+                <p><strong>核心：</strong>任务导向场景图（ToSG）驱动的大规模任务合成。10,000 个标注 3D 物体资产。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">2026</div>
+                <div class="card-title">HybridGen</div>
+                <p><strong>流程：</strong>VLM 解析专家示教 → 分离"需精确控制"与"可自动规划"的段落 → 混合规划生成。</p>
+            </div>
+        </div>
+
+        <div class="highlight-box success">
+            <p><strong>第二代特征：</strong>利用 LLM/VLM 的常识推理能力，从任务描述直接规划执行步骤。核心假设是"LLM 理解物理世界并能生成可行的行动序列"。AutoDataGen 是这一路线在 Isaac Lab 上的代表性实现。</p>
+        </div>
+
+        <!-- 3.3 Third Gen -->
+        <h3 id="s3-3">3.3 第三代：世界模型作为数据引擎</h3>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-year">2025</div>
+                <h4>GigaWorld-0</h4>
+                <p><strong>双组件架构：</strong>视频生成（视觉多样性）+ 3D 生成（几何一致性）。世界模型作为可控数据引擎，为 VLA 模型提供训练数据。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2026</div>
+                <h4>RoboDream</h4>
+                <p><strong>创新：</strong>将机器人运动与视觉上下文解耦。无道具遥操作（Prop-Free Teleoperation）—— 操作员在空环境中运动，模型"幻觉"出物体和交互。零样本泛化。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2026</div>
+                <h4>RoboScape</h4>
+                <p><strong>特色：</strong>物理信息注入的世界模型。时间深度预测 + 关键点动力学学习 → 隐式理解物体材质。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2025</div>
+                <h4>EMOVERSE-AC</h4>
+                <p><strong>双重角色：</strong>既是数据引擎（生成训练轨迹），又是评估器（生成动作条件视频）。无需复杂仿真资产。</p>
+            </div>
+        </div>
+
+        <div class="highlight-box">
+            <p><strong>第三代特征：</strong>不再依赖物理仿真引擎，而是用生成模型直接合成视觉观测。核心假设是"扩散模型可以学到物理规律并生成逼真的交互视频"。优势是视觉多样性极高，挑战是物理一致性验证。</p>
+        </div>
+
+        <!-- 3.4 Fourth Gen -->
+        <h3 id="s3-4">3.4 第四代：Real-to-Sim-to-Real 闭环</h3>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-tag">2025</div>
+                <div class="card-title">ReBot</div>
+                <p><strong>流程：</strong>真实轨迹 → 仿真回放（多样化物体）→ 视频修复合成 → 训练数据。保持动作和观测空间的真实锚定。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">2026</div>
+                <div class="card-title">HyperSim</div>
+                <p><strong>三支柱：</strong>高保真环境合成 + 对抗轨迹生成 + 仿真-真实联合训练。零样本成功率 75%，少样本 95%。</p>
+            </div>
+            <div class="card">
+                <div class="card-tag">2026</div>
+                <div class="card-title">CRAFT</div>
+                <p><strong>面向：</strong>双臂操作的视觉多样性合成。视频扩散模型生成多视角一致的演示数据。7 种视觉变化轴。</p>
+            </div>
+        </div>
+
+        <!-- 3.5 Fifth Gen -->
+        <h3 id="s3-5">3.5 第五代：数据飞轮（Data Flywheel）</h3>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-year">NeurIPS 2025</div>
+                <h4>DexFlyWheel</h4>
+                <p><strong>自改进循环：</strong>IL + 残差 RL → 策略推演 → 数据增强 → 下一轮迭代。飞轮效应：每轮迭代自动扩展数据多样性。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2026</div>
+                <h4>物流具身数据飞轮</h4>
+                <p><strong>工业场景：</strong>将传统自动化数据转化为可复用的具身学习数据资产。操作数据收集 → 世界模型生成 → 部署反馈 → 策略改进。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">CVPR 2026</div>
+                <h4>RoboWheel</h4>
+                <p><strong>跨形态：</strong>人类手部动作 → 机器人末端执行器轨迹 → 多种机器人形态。数据源：运动捕捉、公开 HOI 数据集、RGBD 视频。</p>
+            </div>
+        </div>
+
+        <div class="highlight-box success">
+            <p><strong>第五代特征：</strong>数据生成不再是单向过程，而是形成闭环——策略执行的反馈驱动数据生成的改进。核心假设是"更好的策略产生更好的数据，更好的数据训练更好的策略"。这是当前最前沿的方向。</p>
+        </div>
+    </section>
+
+    <!-- Chapter 4 -->
+    <section id="ch4">
+        <h2>第四章 关键技术组件深度解析</h2>
+
+        <h3>4.1 任务分解与规划</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>技术</th>
+                        <th>方法</th>
+                        <th>代表工作</th>
+                        <th>优势</th>
+                        <th>局限</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>LLM 分解器</strong></td>
+                        <td>将高层任务拆解为原子技能序列</td>
+                        <td>AutoDataGen, RoboGen</td>
+                        <td>零示教、灵活</td>
+                        <td>长时域易出错</td>
+                    </tr>
+                    <tr>
+                        <td><strong>VLM 感知规划</strong></td>
+                        <td>视觉语言模型理解场景并生成执行计划</td>
+                        <td>HybridGen, DeCo</td>
+                        <td>视觉理解能力强</td>
+                        <td>需要视觉输入</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PDDL 规划器</strong></td>
+                        <td>经典 AI 规划与 LLM 结合</td>
+                        <td>LaMMA-P, IALP</td>
+                        <td>形式化保证</td>
+                        <td>需要领域知识</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MCTS 增强</strong></td>
+                        <td>蒙特卡洛树搜索提升 LLM 长时域推理</td>
+                        <td>HumanoidGen</td>
+                        <td>搜索能力强</td>
+                        <td>计算成本高</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>4.2 运动规划与控制</h3>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-title">cuRobo GPU 加速</div>
+                <p>批量碰撞感知轨迹规划。支持多候选目标点批量规划，自动选择最优轨迹。AutoDataGen 和 SkillGen 的核心组件。</p>
+            </div>
+            <div class="card">
+                <div class="card-title">A*/DWA 导航</div>
+                <p>移动机器人路径规划。A* 全局规划 + DWA 局部避障。AutoDataGen 独有支持。</p>
+            </div>
+            <div class="card">
+                <div class="card-title">轨迹优化</div>
+                <p>约束求解生成可行运动。处理关节极限、碰撞避免、姿态约束等。HumanoidGen 使用。</p>
+            </div>
+            <div class="card">
+                <div class="card-title">扩散策略</div>
+                <p>基于扩散模型的策略学习。支持多模态动作分布。DexFlyWheel 和多项 VLA 工作使用。</p>
+            </div>
+        </div>
+
+        <h3>4.3 视觉合成与域适应</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>技术</th>
+                        <th>方法</th>
+                        <th>代表工作</th>
+                        <th>效果</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>视频扩散模型</strong></td>
+                        <td>生成逼真操作视频</td>
+                        <td>CRAFT, RoboTransfer</td>
+                        <td>视觉多样性极高</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3D 高斯溅射</strong></td>
+                        <td>快速新视角合成</td>
+                        <td>RoboSplat, Embody4D</td>
+                        <td>几何一致性好</td>
+                    </tr>
+                    <tr>
+                        <td><strong>域随机化</strong></td>
+                        <td>光照、纹理、背景随机化</td>
+                        <td>Isaac Lab, HyperSim</td>
+                        <td>简单有效</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cosmos Transfer</strong></td>
+                        <td>NVIDIA 光线追踪级视觉增强</td>
+                        <td>GR00T Blueprint</td>
+                        <td>照片级真实感</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>4.4 数据格式与标准化</h3>
+
+        <div class="highlight-box">
+            <p><strong>当前主要格式：</strong>HDF5（MimicGen/DexMimicGen 标准）、LeRobot（Isaac Lab 原生支持，用于 GR00T N1 训练）、Open X-Embodiment（跨形态统一标准）。ARIO（All Robots In One）是正在推进的统一数据标准，涵盖约 300 万条轨迹。</p>
+        </div>
+    </section>
+
+    <!-- Chapter 5 -->
+    <section id="ch5">
+        <h2>第五章 定量对比分析</h2>
+
+        <h3>5.1 数据生成效率对比</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>系统</th>
+                        <th>人类示教数</th>
+                        <th>生成轨迹数</th>
+                        <th>放大倍数</th>
+                        <th>任务复杂度</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>MimicGen</td>
+                        <td>200</td>
+                        <td>50,000</td>
+                        <td>250x</td>
+                        <td>单臂刚体操作</td>
+                    </tr>
+                    <tr>
+                        <td>DexMimicGen</td>
+                        <td>60</td>
+                        <td>21,000</td>
+                        <td>350x</td>
+                        <td>双臂灵巧手</td>
+                    </tr>
+                    <tr>
+                        <td>SkillGen</td>
+                        <td>10-100</td>
+                        <td>1,000-10,000</td>
+                        <td>100x</td>
+                        <td>需要碰撞避免的任务</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AutoDataGen</strong></td>
+                        <td><strong>0</strong></td>
+                        <td><strong>按需</strong></td>
+                        <td><strong>∞</strong></td>
+                        <td><strong>移动操作 + 导航</strong></td>
+                    </tr>
+                    <tr>
+                        <td>RoboGen</td>
+                        <td>0</td>
+                        <td>无限</td>
+                        <td>∞</td>
+                        <td>简单操作任务</td>
+                    </tr>
+                    <tr>
+                        <td>InternData-A1</td>
+                        <td>0</td>
+                        <td>630,000+</td>
+                        <td>∞</td>
+                        <td>70 任务 / 4 形态</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>5.2 Sim-to-Real 迁移效果</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>方法</th>
+                        <th>零样本成功率</th>
+                        <th>少样本成功率</th>
+                        <th>任务类型</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>MimicGen 数据训练</td>
+                        <td>~50%</td>
+                        <td>~75%</td>
+                        <td>单臂抓取</td>
+                    </tr>
+                    <tr>
+                        <td>DexMimicGen + BC-RNN</td>
+                        <td>~60%</td>
+                        <td>~90%</td>
+                        <td>人形双臂</td>
+                    </tr>
+                    <tr>
+                        <td>HyperSim + π₀</td>
+                        <td>75%</td>
+                        <td>95%</td>
+                        <td>操作任务</td>
+                    </tr>
+                    <tr>
+                        <td>InternData-A1</td>
+                        <td>>50%</td>
+                        <td>—</td>
+                        <td>49 仿真 + 5 真实任务</td>
+                    </tr>
+                    <tr>
+                        <td>RoboSimGS</td>
+                        <td>接近真实</td>
+                        <td>—</td>
+                        <td>多种操作</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>5.3 AutoDataGen 在谱系中的定位</h3>
+
+        <div class="highlight-box success">
+            <p><strong>独特价值：</strong>AutoDataGen 是唯一完全消除人类示教依赖的 Isaac Lab 方案。技术路线：LLM 推理 → 技能分解 → 运动规划执行 → 数据输出。适用场景：任务已有明确代码定义，但需要大规模训练数据。</p>
+        </div>
+    </section>
+
+    <!-- Chapter 6 -->
+    <section id="ch6">
+        <h2>第六章 核心挑战与开放问题</h2>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-title">Sim-to-Real 鸿沟</div>
+                <p><strong>视觉差距：</strong>合成图像 vs 真实照片（Cosmos Transfer 部分解决）。<br>
+                <strong>物理差距：</strong>仿真接触模型 vs 真实世界动力学（DexFlyWheel 残差 RL 缓解）。<br>
+                <strong>动态差距：</strong>可变形物体、流体、绳索（SoftMimicGen 探索）。</p>
+            </div>
+            <div class="card">
+                <div class="card-title">数据质量 vs 数量</div>
+                <p>MimicGen 发现：<strong>数据量可能比数据质量更重要</strong>（不同操作员的示教训练效果相当）。但对接触丰富任务（装配、插入），精度至关重要。世界模型生成的数据需要物理一致性验证。</p>
+            </div>
+            <div class="card">
+                <div class="card-title">长时域任务分解</div>
+                <p>当前 LLM 分解器在<strong>超过 10 个子任务</strong>时容易出错。缺乏统一的任务复杂度评估标准。需要闭环反馈验证分解的可行性。</p>
+            </div>
+            <div class="card">
+                <div class="card-title">跨形态泛化</div>
+                <p>从单臂到双臂到人形到灵巧手，数据需求急剧增加。缺乏统一的动作空间标准化（ARIO 标准正在推进）。迁移学习的有效性仍需验证。</p>
+            </div>
+            <div class="card">
+                <div class="card-title">评估基准</div>
+                <p>缺乏统一的<strong>数据生成质量评估指标</strong>。现有基准（LIBERO、RLBench）主要评估策略性能，而非数据本身。需要评估：轨迹多样性、物理一致性、视觉保真度、任务完成率。</p>
+            </div>
+            <div class="card">
+                <div class="card-title">计算成本</div>
+                <p>大规模仿真数据生成需要大量 GPU 算力。cuRobo 运动规划虽然 GPU 加速，但批量规划仍有显著开销。需要在数据规模和计算成本之间权衡。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 7 -->
+    <section id="ch7">
+        <h2>第七章 AutoDataGen 的技术定位与贡献</h2>
+
+        <h3>7.1 在技术谱系中的位置</h3>
+
+        <div class="flow-diagram">
+            <span class="flow-step" style="background:#666;">第一代<br>轨迹增强<br><small>MimicGen/SkillGen</small></span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background:var(--accent);">第二代<br>LLM 规划<br><small>AutoDataGen/RoboGen</small></span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background:#9c27b0;">第三代<br>世界模型<br><small>GigaWorld-0</small></span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background:#ff9800;">第四代<br>闭环<br><small>HyperSim</small></span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step" style="background:var(--secondary);">第五代<br>数据飞轮<br><small>DexFlyWheel</small></span>
+        </div>
+
+        <div class="highlight-box">
+            <p><strong>AutoDataGen 的定位：</strong>第二代（LLM 规划）路线的前沿代表。它证明了在 Isaac Lab 上，通过 LLM 推理 + 运动规划可以完全替代人类示教生成训练数据。</p>
+        </div>
+
+        <h3>7.2 AutoDataGen 的独特贡献</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>贡献</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>零人类示教</strong></td>
+                        <td>唯一在 Isaac Lab 上完全不依赖遥操作的数据生成系统</td>
+                    </tr>
+                    <tr>
+                        <td><strong>技能注册中心</strong></td>
+                        <td>插件式架构，新技能无需修改核心代码</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LLM 缓存</strong></td>
+                        <td>相同任务只分解一次，后续直接复用</td>
+                    </tr>
+                    <tr>
+                        <td><strong>导航支持</strong></td>
+                        <td>集成 A*/DWA 导航，支持移动操作任务</td>
+                    </tr>
+                    <tr>
+                        <td><strong>统一输出</strong></td>
+                        <td>PipelineOutput 包含 success + generated_actions</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>7.3 与其他系统的对比优势</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>对比维度</th>
+                        <th>AutoDataGen</th>
+                        <th>MimicGen</th>
+                        <th>RoboGen</th>
+                        <th>GigaWorld-0</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>人类示教需求</td>
+                        <td><strong>0</strong></td>
+                        <td>200</td>
+                        <td>0</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td>运动规划</td>
+                        <td><strong>cuRobo</strong></td>
+                        <td>无</td>
+                        <td>RL/轨迹优化</td>
+                        <td>3D 生成</td>
+                    </tr>
+                    <tr>
+                        <td>导航支持</td>
+                        <td><strong>是</strong></td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>否</td>
+                    </tr>
+                    <tr>
+                        <td>仿真框架</td>
+                        <td>Isaac Lab</td>
+                        <td>Isaac Gym / MuJoCo</td>
+                        <td>Isaac Gym</td>
+                        <td>自定义</td>
+                    </tr>
+                    <tr>
+                        <td>物理一致性</td>
+                        <td><strong>高</strong></td>
+                        <td>中</td>
+                        <td>低</td>
+                        <td>中-高</td>
+                    </tr>
+                    <tr>
+                        <td>视觉多样性</td>
+                        <td>低（依赖渲染）</td>
+                        <td>中</td>
+                        <td>低</td>
+                        <td><strong>高</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Chapter 8 -->
+    <section id="ch8">
+        <h2>第八章 未来方向与展望</h2>
+
+        <h3>8.1 趋势一：世界模型 + 仿真引擎融合</h3>
+        <div class="highlight-box">
+            <p>视频生成模型提供视觉多样性，物理引擎保证力学一致性。代表工作：GigaWorld-0（视频 + 3D 双组件）、RoboScape（物理信息注入）、Embody4D（4D 新视角合成）。这一方向有望在保持物理真实性的同时实现视觉多样性。</p>
+        </div>
+
+        <h3>8.2 趋势二：自改进数据飞轮</h3>
+        <div class="highlight-box success">
+            <p>策略执行 → 发现失败 → 生成恢复数据 → 重新训练 → 更强策略。代表工作：DexFlyWheel（IL + 残差 RL 循环）、WM-DAgger（世界模型生成恢复轨迹）。这一方向将数据生成从单向过程转变为闭环系统。</p>
+        </div>
+
+        <h3>8.3 趋势三：跨模态数据统一</h3>
+        <p>互联网视频 → 机器人操作数据（LfV 范式）。人类视频 → 机器人动作（ARIO 标准、LeRobot 格式）。代表工作：RoboWheel（人类 HOI → 跨形态轨迹）、IGen（开放世界图像 → 视觉运动数据）。这一方向有望突破机器人数据的根本稀缺性。</p>
+
+        <h3>8.4 趋势四：物理信息注入</h3>
+        <p>世界模型学习物理属性（材质、接触、变形），减少对显式物理引擎的依赖。代表工作：RoboScape（关键点动力学学习）、SoftMimicGen（可变形物体仿真）。这一方向是处理非刚体操作的关键。</p>
+
+        <h3>8.5 AutoDataGen 的演进方向</h3>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-year">短期</div>
+                <h4>扩展技能库</h4>
+                <p>增加更多原子技能（插入、装配、工具使用），覆盖更广泛的操作任务。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">中期</div>
+                <h4>视觉增强集成</h4>
+                <p>集成 Cosmos Transfer 等视觉增强技术，提升 sim-to-real 迁移效果。</p>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">长期</div>
+                <h4>构建数据飞轮</h4>
+                <p>策略执行反馈驱动数据生成改进——失败案例 → 针对性数据生成 → 策略提升。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 9 -->
+    <section id="ch9">
+        <h2>第九章 结论</h2>
+
+        <div class="highlight-box success">
+            <p><strong>核心结论：</strong>数据生成是具身智能从实验室走向产业化的关键使能技术。从"人类示教增强"到"LLM 自主规划"再到"世界模型合成"，自动化程度持续提升。AutoDataGen 代表了<strong>零人类示教</strong>路线的早期探索，证明了 LLM + 运动规划在 Isaac Lab 上的可行性。</p>
+        </div>
+
+        <p>具身智能数据生成的五代演进揭示了一个清晰趋势：<strong>人类参与度逐步降低，算法自动化程度逐步提升</strong>。从 MimicGen 需要 200 条人类示教，到 AutoDataGen 的零示教，再到 DexFlyWheel 的自改进飞轮，数据生成正在从"辅助工具"演变为"自主系统"。</p>
+
+        <p>然而，当前方法仍面临 Sim-to-Real 鸿沟、长时域分解可靠性、跨形态泛化等核心挑战。未来需要在物理一致性、数据质量评估、计算效率等方面持续突破。AutoDataGen 作为 Isaac Lab 上零示教数据生成的先行者，其插件式技能架构和 LLM 分解范式为后续研究提供了有价值的参考。</p>
+    </section>
+
+    <!-- Appendix -->
+    <section id="appendix">
+        <h2>附录</h2>
+
+        <h3>A. 术语表</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>术语</th>
+                        <th>英文</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>仿真到真实迁移</td>
+                        <td>Sim-to-Real</td>
+                        <td>将仿真中训练的策略部署到真实机器人</td>
+                    </tr>
+                    <tr>
+                        <td>视觉-语言-动作模型</td>
+                        <td>VLA</td>
+                        <td>同时处理视觉、语言和动作输入的统一模型</td>
+                    </tr>
+                    <tr>
+                        <td>GPU 加速运动规划库</td>
+                        <td>cuRobo</td>
+                        <td>NVIDIA 的批量碰撞感知轨迹规划库</td>
+                    </tr>
+                    <tr>
+                        <td>示教变换系统</td>
+                        <td>MimicGen</td>
+                        <td>基于示教切分和变换的数据生成系统</td>
+                    </tr>
+                    <tr>
+                        <td>数据飞轮</td>
+                        <td>Data Flywheel</td>
+                        <td>自改进的数据生成闭环系统</td>
+                    </tr>
+                    <tr>
+                        <td>模仿学习</td>
+                        <td>Imitation Learning</td>
+                        <td>从专家示教中学习策略</td>
+                    </tr>
+                    <tr>
+                        <td>行为克隆</td>
+                        <td>Behavioral Cloning</td>
+                        <td>将模仿学习建模为监督学习</td>
+                    </tr>
+                    <tr>
+                        <td>域随机化</td>
+                        <td>Domain Randomization</td>
+                        <td>随机化仿真参数以增强泛化能力</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>B. 主要参考文献</h3>
+
+        <h4>轨迹增强类</h4>
+        <ul>
+            <li>MimicGen: A Data Generation System for Scalable Robot Learning using Human Demonstrations (CoRL 2023)</li>
+            <li>SkillGen for Automated Demonstration Generation (Isaac Lab 官方文档)</li>
+            <li>DexMimicGen: Automated Data Generation for Bimanual Dexterous Manipulation (ICRA 2025)</li>
+            <li>SoftMimicGen: A Data Generation System for Scalable Robot Learning in Deformable Object Manipulation (2026)</li>
+        </ul>
+
+        <h4>LLM 规划类</h4>
+        <ul>
+            <li>AutoDataGen: An automated data generation pipeline based on NVIDIA Isaac Lab (LightwheelAI, 2026)</li>
+            <li>RoboGen: Towards Unleashing Infinite Data for Automated Robot Learning via Generative Simulation (ICML 2024)</li>
+            <li>GenSim2: Scaling Robot Data Generation with Multi-modal and Reasoning LLMs (CoRL 2025)</li>
+            <li>HumanoidGen: Data Generation for Bimanual Dexterous Manipulation via LLM Reasoning (2025)</li>
+            <li>GENMANIP: LLM-driven Simulation for Generalizable Instruction-Following Manipulation (CVPR 2025)</li>
+        </ul>
+
+        <h4>世界模型类</h4>
+        <ul>
+            <li>GigaWorld-0: World Models as Data Engine to Empower Embodied AI (2025)</li>
+            <li>RoboDream: Compositional World Models for Scalable Robot Data Synthesis (2026)</li>
+            <li>RoboScape: Physics-informed Embodied World Model (2026)</li>
+            <li>EMOVERSE-AC: Envisioning Embodied Environments with Action Condition (2025)</li>
+        </ul>
+
+        <h4>闭环方法类</h4>
+        <ul>
+            <li>ReBot: Real-to-Sim-to-Real for Scaling Real Robot Datasets (2025)</li>
+            <li>HyperSim: A Holistic Sim-To-Real Framework For Robust Robotic Manipulation (2026)</li>
+            <li>CRAFT: Visually Diverse Bimanual Demonstrations via Video Diffusion (2026)</li>
+        </ul>
+
+        <h4>数据飞轮类</h4>
+        <ul>
+            <li>DexFlyWheel: A Scalable and Self-improving Data Generation Framework (NeurIPS 2025)</li>
+            <li>RoboWheel: A Data Engine from Real-World Human Demonstrations (CVPR 2026)</li>
+            <li>Towards a Data Flywheel for Embodied Intelligence in Logistics (2026)</li>
+        </ul>
+
+        <h4>综述类</h4>
+        <ul>
+            <li>A Survey of Embodied Artificial Intelligence Data Engineering (2025)</li>
+            <li>Vision-Language-Action in Robotics: A Survey of Datasets, Benchmarks, and Data Engines (2026)</li>
+            <li>Towards Generalist Robot Learning from Internet Video: A Survey (2024)</li>
+            <li>Deep Generative Models in Robotics: A Survey on Learning from Multimodal Demonstrations (2024)</li>
+            <li>Large Model Empowered Embodied AI: A Survey on Decision-Making and Embodied Learning (2025)</li>
+        </ul>
+    </section>
+
+</main>
+
+<footer>
+    <div class="container">
+        <p>具身智能数据生成技术调研报告 · AutoDataGen 项目 · 2026 年 6 月</p>
+        <p>基于 NVIDIA Isaac Lab、cuRobo 及相关开源生态</p>
+    </div>
+</footer>
+
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+    // Back to top button visibility
+    window.addEventListener('scroll', function() {
+        const btn = document.getElementById('backToTop');
+        if (window.scrollY > 500) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    });
+
+    // Smooth scroll for TOC links
+    document.querySelectorAll('.toc a').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

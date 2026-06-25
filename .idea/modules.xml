@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/AutoDataGen.iml" filepath="$PROJECT_DIR$/.idea/AutoDataGen.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/IsaacLab.iml" filepath="$PROJECT_DIR$/.idea/IsaacLab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/autosim.iml" filepath="$PROJECT_DIR$/.idea/autosim.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/autosim_examples.iml" filepath="$PROJECT_DIR$/.idea/autosim_examples.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/curobo.iml" filepath="$PROJECT_DIR$/.idea/curobo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/extension.iml" filepath="$PROJECT_DIR$/.idea/extension.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab.iml" filepath="$PROJECT_DIR$/.idea/isaaclab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_assets.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_assets.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_contrib.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_contrib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_experimental.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_experimental.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_mimic.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_mimic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_newton.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_newton.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_physx.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_physx.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_rl.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_rl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_tasks.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_tasks.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_tasks_experimental.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_tasks_experimental.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/isaaclab_teleop.iml" filepath="$PROJECT_DIR$/.idea/isaaclab_teleop.iml" />
+    </modules>
+  </component>
+</project>

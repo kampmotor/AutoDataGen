@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoDataGen Architecture</title>
+<style>
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #111118;
+    --bg-card: #151520;
+    --bg-card-hover: #1a1a28;
+    --border: #1e1e30;
+    --border-accent: #2a2a45;
+    --text-primary: #e8e8f0;
+    --text-secondary: #8888a0;
+    --text-muted: #555570;
+    --accent-cyan: #06b6d4;
+    --accent-teal: #14b8a6;
+    --accent-emerald: #10b981;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --yellow: #eab308;
+    --red: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(6,182,212,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border: 1px solid var(--border-accent);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 24px;
+    background: rgba(6,182,212,0.06);
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #e8e8f0 0%, #14b8a6 50%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--text-secondary);
+    max-width: 640px;
+    margin: 0 auto 12px;
+  }
+  .hero-tagline {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--accent-teal);
+    background: rgba(20,184,166,0.04);
+    margin-top: 8px;
+  }
+
+  /* Section */
+  .section { padding: 56px 0; }
+  .section-header {
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .section-header::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -8px;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-teal));
+  }
+  .section-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent-cyan);
+    margin-bottom: 4px;
+  }
+  .section-header h3 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* Pipeline Flow */
+  .pipeline {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    overflow-x: auto;
+  }
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    min-width: 700px;
+  }
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+  }
+  .flow-node {
+    padding: 10px 16px;
+    border: 1px solid var(--border-accent);
+    border-radius: 8px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    background: var(--bg-card);
+    transition: border-color 0.2s;
+    line-height: 1.4;
+  }
+  .flow-node:hover { border-color: var(--accent-cyan); }
+  .flow-node .type { color: var(--text-muted); font-size: 10px; }
+  .flow-node .name { color: var(--accent-cyan); font-weight: 600; font-size: 13px; }
+  .flow-node .desc { color: var(--text-secondary); }
+  .flow-node.highlight {
+    border-color: var(--accent-teal);
+    background: rgba(20,184,166,0.06);
+  }
+  .flow-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 4px;
+    color: var(--text-muted);
+    font-size: 10px;
+    position: relative;
+    min-width: 20px;
+  }
+  .flow-arrow .line {
+    width: 24px;
+    height: 1px;
+    background: var(--border-accent);
+    position: relative;
+  }
+  .flow-arrow .line::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: -3px;
+    width: 6px;
+    height: 6px;
+    border-top: 1px solid var(--border-accent);
+    border-right: 1px solid var(--border-accent);
+    transform: rotate(45deg);
+  }
+  .flow-arrow .label {
+    margin-top: 4px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* Cards grid */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .card:hover {
+    border-color: var(--border-accent);
+    background: var(--bg-card-hover);
+  }
+  .card-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--accent-cyan);
+  }
+  .card-title .inherits {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 11px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .card-method {
+    font-size: 11px;
+    color: var(--accent-emerald);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin-top: 6px;
+  }
+  .card .tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-right: 4px;
+    margin-top: 6px;
+  }
+  .tag-purple { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+  .tag-cyan { background: rgba(6,182,212,0.12); color: #67e8f9; border: 1px solid rgba(6,182,212,0.2); }
+  .tag-emerald { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+  .tag-yellow { background: rgba(234,179,8,0.12); color: #fde68a; border: 1px solid rgba(234,179,8,0.2); }
+  .tag-red { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+  .tag-blue { background: rgba(59,130,246,0.12); color: #93c5fd; border: 1px solid rgba(59,130,246,0.2); }
+
+  /* Tables */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: var(--bg-secondary);
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody td:first-child { font-family: 'JetBrains Mono', 'Fira Code', monospace; color: var(--accent-cyan); font-weight: 500; }
+  tbody td .file { font-family: 'JetBrains Mono', 'Fira Code', monospace; color: var(--text-primary); font-size: 12px; }
+
+  /* Type cards */
+  .type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .type-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .type-card .type-name {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--yellow);
+    margin-bottom: 8px;
+  }
+  .type-card .type-fields {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .type-card .type-fields code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: var(--accent-emerald);
+    font-size: 11px;
+  }
+
+  /* Config section */
+  .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .config-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .config-item .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .config-item .icon.black { background: rgba(255,255,255,0.06); color: var(--accent-cyan); }
+  .config-item .icon.flake8 { background: rgba(59,130,246,0.1); color: var(--accent-blue); }
+  .config-item .icon.git { background: rgba(234,179,8,0.1); color: var(--yellow); }
+  .config-item .label { color: var(--text-primary); font-weight: 500; }
+  .config-item .value { color: var(--text-muted); margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .footer a { color: var(--accent-cyan); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* Loop indicator */
+  .flow-loop {
+    background: rgba(234,179,8,0.06);
+    border: 1px dashed rgba(234,179,8,0.25);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--yellow);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero { padding: 48px 0 32px; }
+    .section { padding: 32px 0; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .type-grid { grid-template-columns: 1fr; }
+    .flow { min-width: 0; flex-direction: column; gap: 8px; }
+    .flow-step { width: 100%; }
+    .flow-node { white-space: normal; }
+    .flow-arrow { transform: rotate(90deg); padding: 4px 0; }
+    .flow-loop { white-space: normal; }
+    .container { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">autosim &mdash; v0</div>
+    <h1>AutoDataGen<br>Architecture</h1>
+    <p>Automated simulation data generation pipeline built on NVIDIA Isaac Lab, integrating LLM-based task decomposition, motion planning, and navigation capabilities.</p>
+    <div class="hero-tagline">LLM Task Decomposition &rarr; Atomic Skills &rarr; Motion Planning &rarr; Trajectory Data</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Pipeline Flow -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Pipeline Flow</h2>
+      <h3>Execution Pipeline</h3>
+    </div>
+    <div class="pipeline">
+      <div class="flow">
+
+        <div class="flow-step">
+          <div class="flow-node highlight">
+            <div class="type">input</div>
+            <div class="name">Task + Scene</div>
+            <div class="desc">task code &amp; env info</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">
+          <div class="line"></div>
+          <div class="label">decompose</div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="type">Decomposer</div>
+            <div class="name">LLM Decomposer</div>
+            <div class="desc">with cache &larr; cache hit?</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">
+          <div class="line"></div>
+          <div class="label">parsed</div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="type">DecomposeResult</div>
+            <div class="name">Subtasks + Skills</div>
+            <div class="desc">skill_sequence, objects</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">
+          <div class="line"></div>
+          <div class="label">iterate</div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="type">SkillRegistry</div>
+            <div class="name">Skill.create()</div>
+            <div class="desc">plan &rarr; step loop</div>
+          </div>
+          <div class="flow-loop">max_steps</div>
+        </div>
+
+        <div class="flow-arrow">
+          <div class="line"></div>
+          <div class="label">action</div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-node">
+            <div class="type">ActionAdapter</div>
+            <div class="name">Apply to Env</div>
+            <div class="desc">skill_output &rarr; action</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">
+          <div class="line"></div>
+          <div class="label">step</div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-node highlight">
+            <div class="type">output</div>
+            <div class="name">PipelineOutput</div>
+            <div class="desc">success + actions</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Core Architecture -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Architecture</h2>
+      <h3>Core Abstractions</h3>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card">
+        <div class="card-label">abstract class</div>
+        <div class="card-title">AutoSimPipeline <span class="inherits">(ABC)</span></div>
+        <div class="card-desc">Main pipeline orchestrator. Subclasses implement <code>load_env()</code> and <code>get_env_extra_info()</code>.</div>
+        <div class="card-method">+ run() &rarr; PipelineOutput</div>
+        <div class="card-method">+ decompose() &rarr; DecomposeResult</div>
+        <div class="card-method">+ execute_skill_sequence()</div>
+        <span class="tag tag-cyan">AutoSimPipelineCfg</span>
+      </div>
+
+      <div class="card">
+        <div class="card-label">abstract class</div>
+        <div class="card-title">Skill <span class="inherits">(ABC)</span></div>
+        <div class="card-desc">Base class for atomic robot skills. Each skill has <code>plan</code> + <code>step</code> lifecycle.</div>
+        <div class="card-method">+ plan(world_state, goal) &rarr; bool</div>
+        <div class="card-method">+ step(world_state) &rarr; SkillOutput</div>
+        <div class="card-method">+ extract_goal_from_info() &rarr; SkillGoal</div>
+        <span class="tag tag-purple">SkillCfg</span>
+        <span class="tag tag-purple">SkillExtraCfg</span>
+      </div>
+
+      <div class="card">
+        <div class="card-label">abstract class</div>
+        <div class="card-title">Decomposer <span class="inherits">(ABC)</span></div>
+        <div class="card-desc">Decomposes high-level tasks into structured subtask &amp; skill sequences. LLM-based with filesystem cache.</div>
+        <div class="card-method">+ decompose(env_extra_info) &rarr; DecomposeResult</div>
+        <div class="card-method">+ is_cache_hit(task_name) &rarr; bool</div>
+        <div class="card-method">+ read/write_cache()</div>
+        <span class="tag tag-yellow">DecomposerCfg</span>
+      </div>
+
+      <div class="card">
+        <div class="card-label">base class</div>
+        <div class="card-title">ActionAdapterBase</div>
+        <div class="card-desc">Maps skill outputs to environment action tensors. Plugable per-skill via registration.</div>
+        <div class="card-method">+ apply(skill, output, env) &rarr; Tensor</div>
+        <div class="card-method">+ register_apply_method(name, fn)</div>
+        <span class="tag tag-yellow">ActionAdapterCfg</span>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 32px;">
+      <div class="card" style="max-width: 100%;">
+        <div class="card-label">registration system</div>
+        <div class="card-title">Pipeline &amp; Skill Registry</div>
+        <div class="card-desc" style="margin-bottom: 12px;">
+          Plugin-based registration system for pipelines and skills.
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px;">
+          <code style="color:var(--accent-cyan)">register_pipeline(id, entry_point, cfg_entry_point)</code>
+          <code style="color:var(--accent-cyan)">make_pipeline(id, **cfg_overrides) &rarr; AutoSimPipeline</code>
+          <code style="color:var(--accent-emerald)">@register_skill("name", "desc", cfg_type)</code>
+          <code style="color:var(--accent-emerald)">SkillRegistry.create(name, extra_cfg) &rarr; Skill</code>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Atomic Skills -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Skills</h2>
+      <h3>Atomic Robot Skills</h3>
+    </div>
+
+    <div class="grid-3">
+
+      <div class="card">
+        <div class="card-label">skill</div>
+        <div class="card-title">ReachSkill</div>
+        <div class="card-desc">Motion planning to a target pose. Supports batch-planning with multiple candidate poses (K&times;7).</div>
+        <span class="tag tag-cyan">cuRobo</span>
+        <span class="tag tag-purple">CuroboSkillExtraCfg</span>
+      </div>
+
+      <div class="card">
+        <div class="card-label">skill</div>
+        <div class="card-title">RelativeReachSkill</div>
+        <div class="card-desc">Reach relative to an object's frame axis. Used for orientation-dependent manipulation.</div>
+        <span class="tag tag-cyan">cuRobo</span>
+        <span class="tag tag-purple">CuroboSkillExtraCfg</span>
+      </div>
+
+      <div class="card">
+        <div class="card-label">skill</div>
+        <div class="card-title">GraspSkill</div>
+        <div class="card-desc">Gripper control skill. Opens/closes end-effector based on object interaction.</div>
+        <span class="tag tag-emerald">no planner</span>
+      </div>
+
+      <div class="card">
+        <div class="card-label">skill</div>
+        <div class="card-title">NavigateSkill</div>
+        <div class="card-desc">Mobile base navigation: A* global path planning + DWA local obstacle avoidance.</div>
+        <span class="tag tag-yellow">A* / DWA</span>
+        <span class="tag tag-purple">NavigateSkillExtraCfg</span>
+      </div>
+
+      <div class="card">
+        <div class="card-label">skill</div>
+        <div class="card-title">RetractSkill</div>
+        <div class="card-desc">Retract manipulator to a safe pose after task completion.</div>
+        <span class="tag tag-cyan">cuRobo</span>
+        <span class="tag tag-purple">CuroboSkillExtraCfg</span>
+      </div>
+
+      <div class="card">
+        <div class="card-label">skill</div>
+        <div class="card-title">RotateSkill</div>
+        <div class="card-desc">Rotate end-effector in-place. Used for orientation adjustment without translation.</div>
+        <span class="tag tag-cyan">cuRobo</span>
+        <span class="tag tag-purple">CuroboSkillExtraCfg</span>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 20px;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th>Path</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CuroboPlanner</td>
+              <td><span class="file">capabilities/motion_planning/curobo/</span></td>
+              <td>GPU-accelerated IK &amp; motion planning via cuRobo</td>
+            </tr>
+            <tr>
+              <td>AStarPlanner</td>
+              <td><span class="file">capabilities/navigation/a_star/</span></td>
+              <td>Global path planning on occupancy grid</td>
+            </tr>
+            <tr>
+              <td>DWAPlanner</td>
+              <td><span class="file">capabilities/navigation/dwa/</span></td>
+              <td>Local obstacle avoidance &amp; trajectory rollout</td>
+            </tr>
+            <tr>
+              <td>OccupancyMap</td>
+              <td><span class="file">capabilities/navigation/occupancy_map.py</span></td>
+              <td>Grid map builder with inflation buffer</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Type System -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Types</h2>
+      <h3>Key Dataclasses &amp; Type System</h3>
+    </div>
+
+    <div class="type-grid">
+
+      <div class="type-card">
+        <div class="type-name">PipelineOutput</div>
+        <div class="type-fields">
+          <code>success</code>: bool<br>
+          <code>generated_actions</code>: list[Tensor]
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">SkillGoal</div>
+        <div class="type-fields">
+          <code>target_object</code>: str | None<br>
+          <code>target_pose</code>: Tensor [K,7]<br>
+          <code>extra_target_poses</code>: dict<br>
+          <code>info</code>: dict
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">SkillOutput</div>
+        <div class="type-fields">
+          <code>action</code>: Tensor [action_dim]<br>
+          <code>done</code>: bool<br>
+          <code>success</code>: bool<br>
+          <code>info</code>: dict
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">WorldState</div>
+        <div class="type-fields">
+          <code>robot_joint_pos/vel</code>: Tensor<br>
+          <code>robot_ee_pose</code>: Tensor [7]<br>
+          <code>robot_base_pose</code>: Tensor [3]<br>
+          <code>objects</code>: dict[str, Tensor]
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">EnvExtraInfo</div>
+        <div class="type-fields">
+          <code>task_name</code>: str<br>
+          <code>objects</code>: list[str]<br>
+          <code>robot_name</code>, <code>ee_link_name</code><br>
+          <code>object_reach_target_poses</code>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">DecomposeResult</div>
+        <div class="type-fields">
+          <code>task_name</code>: str<br>
+          <code>subtasks</code>: list[SubtaskResult]<br>
+          <code>skill_sequence</code>: list[str]<br>
+          <code>success_conditions</code>: list[str]
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">SubtaskResult</div>
+        <div class="type-fields">
+          <code>subtask_id</code>: int<br>
+          <code>subtask_name</code>: str<br>
+          <code>skills</code>: list[SkillInfo]
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">SkillInfo</div>
+        <div class="type-fields">
+          <code>step</code>: int<br>
+          <code>skill_type</code>: str<br>
+          <code>target_object</code>: str<br>
+          <code>description</code>: str
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">ObjectInfo</div>
+        <div class="type-fields">
+          <code>name</code>, <code>type</code>: str<br>
+          <code>graspable</code>: bool<br>
+          <code>initial_location</code>: str<br>
+          <code>role</code>: "manipulated" | "static"
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">OccupancyMap</div>
+        <div class="type-fields">
+          <code>occupancy_map</code>: Tensor [H,W]<br>
+          <code>resolution</code>: float<br>
+          <code>map_bounds</code>: MapBounds<br>
+          <code>inflation_radius</code>: float
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">SkillStatus</div>
+        <div class="type-fields">
+          <code>IDLE</code> &rarr; <code>PLANNING</code> &rarr; <code>EXECUTING</code><br>
+          &rarr; <code>SUCCESS</code> | <code>FAILED</code>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="type-name">MapBounds</div>
+        <div class="type-fields">
+          <code>min_x</code>, <code>max_x</code>: float<br>
+          <code>min_y</code>, <code>max_y</code>: float
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Stack -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Configuration</h2>
+      <h3>Project Toolchain &amp; Dependencies</h3>
+    </div>
+
+    <div class="config-grid">
+
+      <div class="config-item">
+        <div class="icon black">B</div>
+        <span class="label">Black</span>
+        <span class="value">line-length 120</span>
+      </div>
+
+      <div class="config-item">
+        <div class="icon flake8">F</div>
+        <span class="label">Flake8</span>
+        <span class="value">complexity &le;30</span>
+      </div>
+
+      <div class="config-item">
+        <div class="icon black">is</div>
+        <span class="label">isort</span>
+        <span class="value">black profile</span>
+      </div>
+
+      <div class="config-item">
+        <div class="icon flake8">Py</div>
+        <span class="label">Pyupgrade</span>
+        <span class="value">py310+</span>
+      </div>
+
+      <div class="config-item">
+        <div class="icon git">CS</div>
+        <span class="label">Codespell</span>
+        <span class="value">spell check</span>
+      </div>
+
+      <div class="config-item">
+        <div class="icon black">3.12</div>
+        <span class="label">Python</span>
+        <span class="value">3.11 / 3.12</span>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 20px;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dependency</th>
+              <th>Type</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Isaac Lab</td>
+              <td>git submodule</td>
+              <td><span class="file">dependencies/IsaacLab/</span></td>
+            </tr>
+            <tr>
+              <td>cuRobo</td>
+              <td>git submodule</td>
+              <td><span class="file">dependencies/curobo/</span></td>
+            </tr>
+            <tr>
+              <td>PyTorch</td>
+              <td>pip</td>
+              <td>torch.Tensor core type</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Footer -->
+<section class="footer">
+  <div class="container">
+    <p>Built on <a href="https://isaac-sim.github.io/IsaacLab" target="_blank" rel="noopener">NVIDIA Isaac Lab</a> + <a href="https://curobo.org" target="_blank" rel="noopener">cuRobo</a></p>
+    <p style="margin-top: 4px; font-size: 12px;">AutoDataGen &mdash; Automated Simulation Data Generation Pipeline</p>
+  </div>
+</section>
+
+</body>
+</html>

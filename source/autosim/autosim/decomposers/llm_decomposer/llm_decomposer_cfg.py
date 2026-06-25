@@ -42,3 +42,13 @@ class LLMDecomposerCfg(DecomposerCfg):
                 " AUTOSIM_LLM_API_KEY=your_api_key"
             )
         self.api_key = api_key
+
+        # Allow overriding base_url via environment variable
+        base_url = os.environ.get("AUTOSIM_LLM_BASE_URL")
+        if base_url is not None:
+            self.base_url = base_url
+
+        # Allow overriding model via environment variable
+        model = os.environ.get("AUTOSIM_LLM_MODEL")
+        if model is not None:
+            self.model = model

@@ -94,7 +94,7 @@ _enable_ui_extensions()
 
 import omni.kit.actions.core
 import omni.ui as ui
-from grasp_editor_helper import (
+from source.autosim.examples.grasp_authoring.grasp_editor_helper import (
     add_world_fixed_joint,
     asset_prim_path,
     configure_grasp_editor_selection,

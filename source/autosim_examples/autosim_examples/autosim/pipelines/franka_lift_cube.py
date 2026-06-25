@@ -1,3 +1,5 @@
+import os
+
 import torch
 from isaaclab.envs import ManagerBasedEnv
 from isaaclab.utils import configclass
@@ -13,7 +15,9 @@ from ..action_adapters.franka_adapter_cfg import FrankaAbsAdapterCfg
 class FrankaCubeLiftPipelineCfg(AutoSimPipelineCfg):
     """Configuration for the Franka cube lift pipeline."""
 
-    decomposer: LLMDecomposerCfg = LLMDecomposerCfg()
+    decomposer: LLMDecomposerCfg = LLMDecomposerCfg(
+        base_url=os.environ.get("AUTOSIM_LLM_BASE_URL", "https://api.openai.com/v1"),
+    )
 
     action_adapter: FrankaAbsAdapterCfg = FrankaAbsAdapterCfg()
 

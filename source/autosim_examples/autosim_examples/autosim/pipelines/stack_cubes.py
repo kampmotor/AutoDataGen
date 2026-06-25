@@ -95,6 +95,18 @@ class StackCubesPipeline(AutoSimPipeline):
         """获取环境额外信息，包括堆叠任务的特殊配置."""
         available_objects = self._env.scene.keys()
 
+        # 堆叠任务的目标位姿是相对于物体的偏移量（object frame offsets）
+        # reach 技能的 _compute_goal_from_offset() 会自动将偏移量转换到 robot root frame
+        object_reach_target_poses = {}
+
+        for obj_name in available_objects:
+            if "cube" in obj_name:
+                # 每个立方体的抓取目标：在物体上方 10cm，gripper 朝下
+                # 偏移量 [x, y, z, qw, qx, qy, qz] 在物体坐标系中
+                object_reach_target_poses[obj_name] = [
+                    torch.tensor([0.0, 0.0, 0.10, 1.0, 0.0, 0.0, 0.0]),
+                ]
+
         return EnvExtraInfo(
             task_name=self._task_name,
             objects=available_objects,
@@ -131,19 +143,5 @@ class StackCubesPipeline(AutoSimPipeline):
             robot_name="robot",
             robot_base_link_name="panda_link0",
             ee_link_name="panda_hand",
-            # 堆叠目标位姿 - 需要根据实际立方体位置计算
-            object_reach_target_poses={
-                "cube_1": [
-                    # 第一个立方体放置位置（桌面中心）
-                    torch.tensor([0.5, 0.0, 0.10, 1.0, 0.0, 0.0, 0.0]),
-                ],
-                "cube_2": [
-                    # 第二个立方体放置位置（cube_1 上方）
-                    torch.tensor([0.5, 0.0, 0.15, 1.0, 0.0, 0.0, 0.0]),
-                ],
-                "cube_3": [
-                    # 第三个立方体放置位置（cube_2 上方）
-                    torch.tensor([0.5, 0.0, 0.20, 1.0, 0.0, 0.0, 0.0]),
-                ],
-            },
+            object_reach_target_poses=object_reach_target_poses,
         )

@@ -218,7 +218,9 @@ class AutoSimPipeline(ABC):
 
             adapter_result = self._action_adapter.apply(skill, output, self._env)
             action = self._last_action.clone()
-            action[self._env_id, : adapter_result.shape[0]] = adapter_result
+            # Handle size mismatch: adapter may return fewer dims than action_space
+            n = min(adapter_result.shape[0], action.shape[-1])
+            action[self._env_id, :n] = adapter_result[:n]
 
             _, _, terminated, truncated, _ = self._env.step(action)
             self._last_action = action

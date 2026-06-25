@@ -5,6 +5,7 @@ import importlib
 import inspect
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -77,15 +78,36 @@ class LLMDecomposer(Decomposer):
         )
         self._prompt_template = jinja_env.get_template("task_decompose.jinja")
 
+        # LLM log directory
+        self._llm_log_dir = Path(self.cfg.llm_log_dir).expanduser()
+        self._llm_log_dir.mkdir(parents=True, exist_ok=True)
+
     def decompose(self, extra_info: EnvExtraInfo) -> DecomposeResult:
 
         task_code = self._load_task_code(extra_info.task_name)
         prompt = self._build_prompt(task_code, extra_info)
         self._logger.debug(f"prompt for llm composer: \n{prompt}")
 
+        # Prepare log file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        task_name_safe = extra_info.task_name.replace("/", "_").replace(" ", "_")
+        log_path = self._llm_log_dir / f"{task_name_safe}_{timestamp}.md"
+
         max_retries = self.cfg.max_decompose_retries
         last_error: Exception | None = None
         valid_objects = set(extra_info.objects) if extra_info.objects else None
+
+        # Write prompt header to log
+        with open(log_path, "w") as f:
+            f.write(f"# LLM Decomposition Log\n\n")
+            f.write(f"- **Task**: {extra_info.task_name}\n")
+            f.write(f"- **Time**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"- **Model**: {self.cfg.model}\n\n")
+            f.write("---\n\n")
+            f.write("## Prompt\n\n")
+            f.write("```text\n")
+            f.write(prompt)
+            f.write("\n```\n\n")
 
         for attempt in range(1, max_retries + 1):
             self._logger.info(f"generate response from llm (attempt {attempt}/{max_retries})...")
@@ -93,16 +115,34 @@ class LLMDecomposer(Decomposer):
                 prompt=prompt, temperature=self.cfg.temperature, max_tokens=self.cfg.max_tokens
             )
 
+            # Append LLM response to log
+            with open(log_path, "a") as f:
+                f.write(f"## Response (Attempt {attempt})\n\n")
+                f.write("```text\n")
+                f.write(response)
+                f.write("\n```\n\n")
+
             try:
                 results = self._extract_json(response)
                 self._validate_result(results, valid_objects)
+                # Append successful result to log
+                with open(log_path, "a") as f:
+                    f.write(f"## Parsed Result (Success)\n\n")
+                    f.write("```json\n")
+                    f.write(json.dumps(results, indent=2, ensure_ascii=False))
+                    f.write("\n```\n")
                 return from_dict(DecomposeResult, results)
             except (json.JSONDecodeError, ValueError) as e:
                 last_error = e
                 self._logger.warning(f"Decomposition attempt {attempt} failed: {e}")
+                with open(log_path, "a") as f:
+                    f.write(f"> ❌ Attempt {attempt} failed: {e}\n\n")
                 if attempt < max_retries:
                     self._logger.info("Retrying...")
 
+        # Append failure to log
+        with open(log_path, "a") as f:
+            f.write(f"> ❌ **All {max_retries} attempts failed.** Last error: {last_error}\n")
         raise ValueError(f"Decomposition failed after {max_retries} attempts. Last error: {last_error}")
 
     def _load_task_code(self, task_name: str) -> str:

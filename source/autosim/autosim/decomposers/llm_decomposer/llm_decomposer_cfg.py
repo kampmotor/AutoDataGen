@@ -33,6 +33,9 @@ class LLMDecomposerCfg(DecomposerCfg):
     max_decompose_retries: int = 3
     """Maximum number of retries if decomposition fails (JSON parse error or validation error)."""
 
+    llm_log_dir: str = "~/.cache/autosim/llm_logs"
+    """Directory to save LLM input (prompt) and output (response) logs in .md format."""
+
     def __post_init__(self) -> None:
         super().__post_init__()
         api_key = os.environ.get("AUTOSIM_LLM_API_KEY")
